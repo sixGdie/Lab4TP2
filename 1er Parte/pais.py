@@ -1,3 +1,5 @@
+from distutils.log import info
+import traceback
 import requests as rq
 import mysql.connector as mc
 
@@ -19,9 +21,18 @@ for i in range(0, 301):
         print("No existe el codigo de pais: " + str(i))
         continue
     try:
-        cursor.execute("INSERT INTO pais (codigo, nombre, capital, region, poblacion, latitud, longitud) VALUES (%s, %s, %s, %s, %s, %s, %s)", (response.json()[0]['callingCodes'][0], response.json()[
-                       0]['name'], response.json()[0]['capital'], response.json()[0]['region'], response.json()[0]['population'], response.json()[0]['latlng'][0], response.json()[0]['latlng'][1]))
+        # if country exists in database then update
+        cursor.execute("SELECT * FROM pais WHERE codigo = %s", (i,))
+        if cursor.fetchone():
+            cursor.execute("UPDATE pais SET codigo = %s, nombre = %s, capital = %s, region = %s, poblacion = %s, latitud = %s, longitud = %s WHERE codigo = %s", (i, response.json()[
+                           0]['name'], response.json()[0]['capital'], response.json()[0]['region'], response.json()[0]['population'], response.json()[0]['latlng'][0], response.json()[0]['latlng'][1], i))
+            db.commit()
+            print("Actualizado: " + str(i))
+            continue
+        else:
+            cursor.execute("INSERT INTO pais (codigo, nombre, capital, region, poblacion, latitud, longitud) VALUES (%s, %s, %s, %s, %s, %s, %s)", (response.json()[0]['callingCodes'][0], response.json()[
+                0]['name'], response.json()[0]['capital'], response.json()[0]['region'], response.json()[0]['population'], response.json()[0]['latlng'][0], response.json()[0]['latlng'][1]))
         db.commit()
-    except:
-        print("Error al insertar el pais: " + str(i))
+    except Exception:
+        traceback.print_exc()
         continue
