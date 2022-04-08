@@ -21,7 +21,6 @@ for i in range(0, 301):
         print("No existe el codigo de pais: " + str(i))
         continue
     try:
-        # if country exists in database then update
         cursor.execute("SELECT * FROM pais WHERE codigo = %s", (i,))
         if cursor.fetchone():
             cursor.execute("UPDATE pais SET codigo = %s, nombre = %s, capital = %s, region = %s, poblacion = %s, latitud = %s, longitud = %s WHERE codigo = %s", (i, response.json()[
